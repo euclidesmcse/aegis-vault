@@ -1,0 +1,34 @@
+# ── Aegis Vault — Exemplo de terraform.tfvars para Azure ───
+# Copie para terraform.tfvars e ajuste antes de aplicar.
+
+environment  = "dev"
+location     = "eastus"
+project_name = "aegisvault"
+release_tag  = "latest"
+
+# PostgreSQL Flexible Server
+pg_sku_name  = "B_Standard_B1ms"  # Burstable 1 vCore / 2 GiB
+pg_storage_mb = 32768              # 32 GiB
+pg_version    = "16"
+db_name       = "aegis"
+
+# Redis Cache
+redis_sku      = "Basic"
+redis_family   = "C"
+redis_capacity = 0  # 250 MB
+
+# Container Apps
+api_cpu    = 0.5
+api_memory = "1.0Gi"
+api_count  = 1
+
+worker_cpu    = 0.25
+worker_memory = "0.5Gi"
+worker_count  = 1
+
+web_cpu    = 0.25
+web_memory = "0.5Gi"
+web_count  = 1
+
+# Secret (vazio = auto-gerado)
+session_secret = ""

@@ -1,0 +1,30 @@
+# ── Aegis Vault — Exemplo de terraform.tfvars ──────────────
+# Copie este arquivo para terraform.tfvars e ajuste os valores.
+
+environment  = "dev"
+aws_region   = "us-east-1"
+domain_name  = "vault.example.com" # deixe vazio para dev local
+release_tag  = "latest"
+
+# Database
+db_instance_class    = "db.t4g.micro"
+db_name              = "aegis"
+db_username          = "aegis_admin"
+db_password          = "" # vazio = auto-gerado pelo Terraform
+db_allocated_storage = 20
+
+# Redis
+redis_node_type = "cache.t4g.micro"
+
+# Compute
+api_cpu    = 512
+api_memory = 1024
+api_count  = 2
+
+worker_cpu    = 256
+worker_memory = 512
+worker_count  = 1
+
+web_cpu    = 256
+web_memory = 512
+web_count  = 1

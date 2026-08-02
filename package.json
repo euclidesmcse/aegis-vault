@@ -1,0 +1,35 @@
+{
+  "name": "@aegis/crypto",
+  "version": "0.1.0",
+  "description": "Primitives criptograficas compartilhadas (KDF Argon2id, AEAD XChaCha20-Poly1305-IETF, envelopes canonicos).",
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./envelope": "./src/envelope.ts",
+    "./prng": "./src/prng.ts",
+    "./kdf": "./src/kdf.ts",
+    "./aead": "./src/aead.ts",
+    "./share": "./src/share.ts",
+    "./encoding": "./src/encoding.ts",
+    "./hash": "./src/hash.ts",
+    "./ulid": "./src/ulid.ts"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint src test --max-warnings=0",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "libsodium-wrappers": "^0.7.13"
+  },
+  "devDependencies": {
+    "@types/libsodium-wrappers": "^0.7.14",
+    "@types/node": "^20.12.7",
+    "typescript": "^5.5.3",
+    "vitest": "^1.6.0"
+  }
+}

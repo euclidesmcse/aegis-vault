@@ -1,0 +1,21 @@
+{
+  "name": "@aegis/crypto",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test:smoke": "node --experimental-strip-types --no-warnings --experimental-loader=../../scripts/loader-ts-as-js.mjs test/smoke.test.mjs",
+    "test": "pnpm run test:smoke",
+    "test:shim": "node --experimental-strip-types --no-warnings --experimental-loader=../../scripts/loader-ts-as-js.mjs test/shim-roundtrip.test.mjs",
+    "test:all": "pnpm run test:smoke && pnpm run test:shim"
+  },
+  "dependencies": {
+    "libsodium-wrappers": "^0.7.13"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.3"
+  }
+}

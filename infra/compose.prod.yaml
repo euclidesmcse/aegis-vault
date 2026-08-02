@@ -1,0 +1,78 @@
+name: aegis-vault-prod
+# Compose de referência para producao. Use apenas como ponto de partida;
+# ajuste limites de recursos, redes, volumes e secrets conforme sua infraestrutura.
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+    networks: [aegis_net]
+  redis:
+    image: redis:7-alpine
+    restart: always
+    command: ["redis-server", "--appendonly", "yes", "--maxmemory", "1gb", "--maxmemory-policy", "allkeys-lru", "--requirepass", "${REDIS_PASSWORD}"]
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "--no-auth-warning", "PING"]
+    networks: [aegis_net]
+  api:
+    image: aegis/api:${RELEASE_TAG}
+    restart: always
+    user: "1000:1000"
+    read_only: true
+    tmpfs: ["/tmp"]
+    cap_drop: ["ALL"]
+    cap_add: ["CHOWN", "SETUID", "SETGID"]
+    security_opt: ["no-new-privileges:true"]
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis: { condition: service_healthy }
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_URL: ${REDIS_URL}
+      SESSION_SECRET: ${SESSION_SECRET}
+      NODE_ENV: production
+    secrets:
+      - session_secret
+    networks: [aegis_net]
+  web:
+    image: aegis/web:${RELEASE_TAG}
+    restart: always
+    user: "1000:1000"
+    read_only: true
+    networks: [aegis_net]
+  worker:
+    image: aegis/worker:${RELEASE_TAG}
+    restart: always
+    user: "1000:1000"
+    read_only: true
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis: { condition: service_healthy }
+    networks: [aegis_net]
+  caddy:
+    image: caddy:2-alpine
+    restart: always
+    ports: ["80:80", "443:443"]
+    volumes:
+      - ./proxy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+    networks: [aegis_net]
+volumes:
+  pgdata:
+  redisdata:
+  caddy_data:
+networks:
+  aegis_net:
+secrets:
+  session_secret:
+    external: true

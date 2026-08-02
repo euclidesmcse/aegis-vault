@@ -1,0 +1,19 @@
+# ── Aegis Vault — Terraform Local (Docker) ─────────────────
+# Copie para terraform.tfvars e ajuste antes de aplicar.
+
+environment       = "dev"
+postgres_password = ""                       # vazio = auto-gerado
+postgres_port     = 5432
+redis_password    = ""
+redis_port        = 6379
+
+minio_root_user     = "aegis-dev-access"
+minio_root_password = "aegis-dev-secret-change-me"
+
+mailpit_smtp_port = 1025
+mailpit_ui_port   = 8025
+
+api_port     = 3001
+web_port     = 3000
+release_tag  = "latest"
+session_secret = "dev-secret-change-me-in-prod"

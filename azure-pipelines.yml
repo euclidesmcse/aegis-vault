@@ -1,0 +1,206 @@
+# ═══════════════════════════════════════════════════════════════
+# Azure DevOps Pipeline — Aegis Vault CI/CD
+# ═══════════════════════════════════════════════════════════════
+
+trigger:
+  branches:
+    include:
+      - main
+      - master
+  paths:
+    include:
+      - apps/*
+      - packages/*
+      - infra/terraform/*
+
+pr:
+  branches:
+    include:
+      - main
+      - master
+
+variables:
+  - name: NODE_VERSION
+    value: '20.x'
+  - name: PNPM_VERSION
+    value: '9.x'
+
+stages:
+  # ── Stage 1: Build & Test ──────────────────────────────────
+  - stage: BuildAndTest
+    displayName: 'Build & Test'
+    jobs:
+      - job: Test
+        displayName: 'Lint, Typecheck & Unit Tests'
+        pool:
+          vmImage: 'ubuntu-latest'
+        steps:
+          - task: NodeTool@0
+            inputs:
+              versionSpec: $(NODE_VERSION)
+            displayName: 'Install Node.js'
+
+          - script: npm install -g pnpm@$(PNPM_VERSION)
+            displayName: 'Install pnpm'
+
+          - script: pnpm install --frozen-lockfile
+            displayName: 'Install dependencies'
+
+          - script: pnpm run lint
+            displayName: 'Lint'
+
+          - script: pnpm run typecheck
+            displayName: 'Typecheck'
+
+          - script: pnpm run test
+            displayName: 'Run tests'
+
+  # ── Stage 2: Terraform Plan (AWS) ──────────────────────────
+  - stage: TerraformPlanAWS
+    displayName: 'Terraform Plan — AWS'
+    dependsOn: BuildAndTest
+    condition: succeeded()
+    jobs:
+      - job: Plan
+        displayName: 'Terraform Plan'
+        pool:
+          vmImage: 'ubuntu-latest'
+        steps:
+          - task: TerraformInstaller@2
+            inputs:
+              terraformVersion: '1.6.x'
+            displayName: 'Install Terraform'
+
+          - script: |
+              cd infra/terraform/aws
+              terraform init -input=false
+              terraform validate
+              terraform plan -input=false -out=tfplan
+            displayName: 'Terraform Init, Validate & Plan'
+            env:
+              AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
+              AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
+              AWS_DEFAULT_REGION: us-east-1
+
+  # ── Stage 3: Terraform Plan (Azure) ────────────────────────
+  - stage: TerraformPlanAzure
+    displayName: 'Terraform Plan — Azure'
+    dependsOn: BuildAndTest
+    condition: succeeded()
+    jobs:
+      - job: Plan
+        displayName: 'Terraform Plan'
+        pool:
+          vmImage: 'ubuntu-latest'
+        steps:
+          - task: TerraformInstaller@2
+            inputs:
+              terraformVersion: '1.6.x'
+            displayName: 'Install Terraform'
+
+          - script: |
+              cd infra/terraform/azure
+              terraform init -input=false
+              terraform validate
+              terraform plan -input=false -out=tfplan
+            displayName: 'Terraform Init, Validate & Plan'
+            env:
+              ARM_CLIENT_ID: $(AZURE_CLIENT_ID)
+              ARM_CLIENT_SECRET: $(AZURE_CLIENT_SECRET)
+              ARM_SUBSCRIPTION_ID: $(AZURE_SUBSCRIPTION_ID)
+              ARM_TENANT_ID: $(AZURE_TENANT_ID)
+
+  # ── Stage 4: Docker Build & Push ──────────────────────────
+  - stage: DockerBuild
+    displayName: 'Build & Push Docker Images'
+    dependsOn: BuildAndTest
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+    jobs:
+      - job: BuildPush
+        displayName: 'Build & Push'
+        pool:
+          vmImage: 'ubuntu-latest'
+        steps:
+          - task: Docker@2
+            inputs:
+              containerRegistry: 'aegis-registry'
+              repository: 'aegis/api'
+              command: 'buildAndPush'
+              Dockerfile: 'infra/docker/api.Dockerfile'
+              tags: '$(Build.BuildId)'
+            displayName: 'Build & Push API'
+
+          - task: Docker@2
+            inputs:
+              containerRegistry: 'aegis-registry'
+              repository: 'aegis/web'
+              command: 'buildAndPush'
+              Dockerfile: 'infra/docker/web.Dockerfile'
+              tags: '$(Build.BuildId)'
+            displayName: 'Build & Push Web'
+
+          - task: Docker@2
+            inputs:
+              containerRegistry: 'aegis-registry'
+              repository: 'aegis/worker'
+              command: 'buildAndPush'
+              Dockerfile: 'infra/docker/worker.Dockerfile'
+              tags: '$(Build.BuildId)'
+            displayName: 'Build & Push Worker'
+
+  # ── Stage 5: Terraform Apply (manual approval) ─────────────
+  - stage: TerraformApply
+    displayName: 'Terraform Apply — Production'
+    dependsOn:
+      - TerraformPlanAWS
+      - TerraformPlanAzure
+      - DockerBuild
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+    jobs:
+      - deployment: ApplyAWS
+        displayName: 'Apply AWS Infrastructure'
+        environment: 'production-aws'
+        pool:
+          vmImage: 'ubuntu-latest'
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - task: TerraformInstaller@2
+                  inputs:
+                    terraformVersion: '1.6.x'
+                  displayName: 'Install Terraform'
+
+                - script: |
+                    cd infra/terraform/aws
+                    terraform init -input=false
+                    terraform apply -auto-approve -input=false tfplan
+                  displayName: 'Terraform Apply AWS'
+                  env:
+                    AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
+                    AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
+
+      - deployment: ApplyAzure
+        displayName: 'Apply Azure Infrastructure'
+        environment: 'production-azure'
+        pool:
+          vmImage: 'ubuntu-latest'
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - task: TerraformInstaller@2
+                  inputs:
+                    terraformVersion: '1.6.x'
+                  displayName: 'Install Terraform'
+
+                - script: |
+                    cd infra/terraform/azure
+                    terraform init -input=false
+                    terraform apply -auto-approve -input=false tfplan
+                  displayName: 'Terraform Apply Azure'
+                  env:
+                    ARM_CLIENT_ID: $(AZURE_CLIENT_ID)
+                    ARM_CLIENT_SECRET: $(AZURE_CLIENT_SECRET)
+                    ARM_SUBSCRIPTION_ID: $(AZURE_SUBSCRIPTION_ID)
+                    ARM_TENANT_ID: $(AZURE_TENANT_ID)

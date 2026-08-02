@@ -1,0 +1,66 @@
+# ── Dependências ──────────────────────────────────
+node_modules/
+.pnpm-store/
+
+# ── Build / output ───────────────────────────────
+dist/
+build/
+.next/
+*.tsbuildinfo
+
+# ── Testes / cobertura ───────────────────────────
+coverage/
+playwright-report/
+test-results/
+
+# ── Variáveis de ambiente ────────────────────────
+.env
+.env.local
+.env.*.local
+.env.production
+!.env.example
+
+# ── Logs ─────────────────────────────────────────
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ── SO ───────────────────────────────────────────
+.DS_Store
+Thumbs.db
+
+# ── IDEs / editores ──────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ── Infra / dados locais ─────────────────────────
+infra/data/
+
+# ── OpenAPI gerado ───────────────────────────────
+public/api/openapi.json
+apps/api/openapi.yaml
+
+# ── Lockfiles extras (prefira pnpm-lock.yaml) ────
+package-lock.json
+yarn.lock
+
+# ── Secrets / certificados ───────────────────────
+*.pem
+*.key
+*.crt
+*.pfx
+
+# ── Bancos de dados locais ───────────────────────
+*.db
+*.db-shm
+*.db-wal
+
+# ── Misc ─────────────────────────────────────────
+.turbo/
+.vercel/
+*.tgz

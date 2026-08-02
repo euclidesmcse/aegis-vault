@@ -1,0 +1,37 @@
+{
+  "mcpServers": {
+    "terraform-aws": {
+      "command": "npx",
+      "args": ["-y", "@anthropics/mcp-server-terraform"],
+      "env": {
+        "PATH": "/usr/local/bin:/usr/bin:/bin:${env:PATH}"
+      },
+      "cwd": "${workspaceFolder}/infra/terraform/aws"
+    },
+    "terraform-azure": {
+      "command": "npx",
+      "args": ["-y", "@anthropics/mcp-server-terraform"],
+      "env": {
+        "PATH": "/usr/local/bin:/usr/bin:/bin:${env:PATH}",
+        "ARM_CLIENT_ID": "${env:ARM_CLIENT_ID}",
+        "ARM_CLIENT_SECRET": "${env:ARM_CLIENT_SECRET}",
+        "ARM_SUBSCRIPTION_ID": "${env:ARM_SUBSCRIPTION_ID}",
+        "ARM_TENANT_ID": "${env:ARM_TENANT_ID}"
+      },
+      "cwd": "${workspaceFolder}/infra/terraform/azure"
+    },
+    "terraform-local": {
+      "command": "npx",
+      "args": ["-y", "@anthropics/mcp-server-terraform"],
+      "env": {
+        "PATH": "/usr/local/bin:/usr/bin:/bin:${env:PATH}"
+      },
+      "cwd": "${workspaceFolder}/infra/terraform/local"
+    },
+    "git": {
+      "command": "npx",
+      "args": ["-y", "@anthropics/mcp-server-git"],
+      "cwd": "${workspaceFolder}"
+    }
+  }
+}

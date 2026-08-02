@@ -1,0 +1,51 @@
+name: CI
+
+on:
+  push: { branches: [main] }
+  pull_request: { branches: [main] }
+
+jobs:
+  test:
+    runs-on: ubuntu-22.04
+    defaults:
+      run:
+        working-directory: aegis-vault
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with: { version: 9 }
+      - uses: actions/setup-node@v4
+        with: { node-version: 20, cache: pnpm, cache-dependency-path: aegis-vault/pnpm-lock.yaml }
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm -r typecheck
+      - run: pnpm --filter @aegis/i18n check
+      - run: pnpm --filter @aegis/crypto test
+      - run: pnpm --filter @aegis/contracts test
+      - run: pnpm --filter @aegis/authz test
+
+  build-images:
+    runs-on: ubuntu-22.04
+    needs: test
+    defaults:
+      run:
+        working-directory: aegis-vault
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env: { POSTGRES_USER: aegis, POSTGRES_PASSWORD: aegis, POSTGRES_DB: aegis }
+      redis:
+        image: redis:7-alpine
+    env:
+      DATABASE_URL: postgres://aegis:aegis@localhost:5432/aegis
+      REDIS_URL: redis://localhost:6379/0
+      SESSION_SECRET: ${{ secrets.SESSION_SECRET || 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqr' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with: { version: 9 }
+      - uses: actions/setup-node@v4
+        with: { node-version: 20, cache: pnpm }
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @aegis/api build
+      - run: pnpm --filter @aegis/api db:migrate
+      - run: pnpm --filter @aegis/api test:integration
