@@ -88,7 +88,7 @@ export async function generatePassphrase(opts: PassphraseOptions): Promise<strin
     if (!w) continue;
     let token = w;
     if (opts.capitalize === 'all' || (opts.capitalize === 'first' && i === 0)) {
-      token = token[0]?.toUpperCase() + token.slice(1) ?? token;
+      token = token[0] ? token[0].toUpperCase() + token.slice(1) : token;
     }
     tokens.push(token);
   }

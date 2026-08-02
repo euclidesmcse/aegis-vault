@@ -58,8 +58,8 @@ export async function createExportBundle(input: ExportInput): Promise<Uint8Array
   if (input.items.length > 100_000) {
     throw new Error('item count exceeds 100k — split into multiple bundles');
   }
-  const s = await sodium.ready;
-  const salt = s.randombytes_buf(SALT_BYTES);
+  await sodium.ready;
+  const salt = sodium.randombytes_buf(SALT_BYTES);
   const workspaceId = (input.workspaceId ?? '').trim();
   if (!workspaceId.length || workspaceId.includes(':')) {
     throw new Error('workspaceId must be non-empty and contain no ":"');
@@ -96,8 +96,11 @@ export async function createExportBundle(input: ExportInput): Promise<Uint8Array
 export async function decryptExportBundleWithContext(
   file: Uint8Array,
   passphrase: string,
-  ctx: { workspaceId: string; exportedAt: string },
+  ctx: { workspaceId: string; exportedAt?: string },
 ): Promise<ExportBundleJson> {
+  if (!ctx.exportedAt) {
+    throw new Error('exportedAt sidecar required for restore');
+  }
   const raw = typeof file === 'string' ? fromBase64Url(file) : file;
   const headerLen = EXPORT_MAGIC.length + 1 + SALT_BYTES + NONCE_BYTES;
   if (raw.length < headerLen + 16) throw new Error('file too short');

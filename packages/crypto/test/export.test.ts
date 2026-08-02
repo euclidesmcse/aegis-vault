@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import sodium from 'libsodium-wrappers';
 import { createExportBundle, decryptExportBundleWithContext, EXPORT_MAGIC, ExportBundleJson } from '../src/export.js';
-import { utf8Encode } from '../src/encoding.js';
+import { utf8Encode, fromBase64Url } from '../src/encoding.js';
 
 await sodium.ready;
 
@@ -14,15 +14,6 @@ const SEED_ITEMS = () => ({
     { originItemId: 'item-b', type: 'note' as const, folderIdOrigin: null, collectionIdOrigin: null, favorite: false, trashed: false, createdAt: '2024-01-01T00:00:00Z', updatedAt: '2024-01-02T00:00:00Z', payload: utf8Encode('bob-secret') },
   ],
 });
-
-function exportWithFixedTimestamp(base: ReturnType<typeof SEED_ITEMS>, fixedTs: string) {
-  return createExportBundle({ ...base, originMeta: { ...base.originMeta, exportedAt: fixedTs } }).then(async (file) => {
-    // Derive inner timestamp from the bundle side-effect: the producer sets
-    // exportedAt = Date.now(). To tests, we use decryptExportBundleWithContext
-    // and probe up to 1 hour backward.
-    return { file, fixed: fixedTs };
-  });
-}
 
 describe('Export bundle (.aegis)', () => {
   it('AC-VAULT-001: roundtrip preserves plaintext exactly', async () => {
@@ -44,7 +35,7 @@ describe('Export bundle (.aegis)', () => {
       // Acceptable: timestamp is uncontrolled. Skip strict assertion in this run.
       return;
     }
-    const items = bundle.items.map((i) => ({ id: i.originItemId, payload: new TextDecoder().decode(utf8Encode(i.payloadB64 === '' ? new Uint8Array(0) : new Uint8Array(0))) }));
+    const items = bundle.items.map((i) => ({ id: i.originItemId, payload: new TextDecoder().decode(fromBase64Url(i.payloadB64)) }));
     void items;
   });
 

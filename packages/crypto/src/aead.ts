@@ -30,6 +30,7 @@ export async function encrypt(
   const ct = await s.crypto_aead_xchacha20poly1305_ietf_encrypt(
     plaintext,
     aad,
+    null,
     npub,
     key,
   );

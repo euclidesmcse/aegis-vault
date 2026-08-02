@@ -28,11 +28,9 @@ async function ensureReady(): Promise<typeof sodium> {
 export async function deriveKey(password: string, salt: Uint8Array, profile: Argon2Profile = Profiles.standard, keyBytes = Argon2Params.KEY_BYTES): Promise<Uint8Array> {
   if (typeof password !== 'string' || password.length === 0) throw new Error('password must be a non-empty string');
   if (password.length > Argon2Params.MAX_PWD_LEN) throw new Error('password exceeds maximum length');
-  if (salt.length < Argon2Params.SALT_BYTES) throw new Error('salt must be >= ' + Argon2Params.SALT_BYTES + ' bytes');
+  if (salt.length !== Argon2Params.SALT_BYTES) throw new Error('salt must be exactly ' + Argon2Params.SALT_BYTES + ' bytes');
   const s = await ensureReady();
-  const out = new Uint8Array(keyBytes);
-  s.crypto_pwhash(out, utf8Encode(password.normalize('NFKC')), salt, profile.t, profile.m, profile.p, Argon2Params.ALG);
-  return out;
+  return s.crypto_pwhash(keyBytes, utf8Encode(password.normalize('NFKC')), salt, profile.t, profile.m, Argon2Params.ALG);
 }
 
 /**
@@ -42,8 +40,7 @@ export async function deriveKey(password: string, salt: Uint8Array, profile: Arg
 export async function hashPassword(password: string, profile: Argon2Profile = Profiles.hardened): Promise<{ hashB64Url: string; saltB64Url: string; profile: Argon2Profile }> {
   const s = await ensureReady();
   const salt = s.randombytes_buf(Argon2Params.SALT_BYTES);
-  const out = new Uint8Array(Argon2Params.KEY_BYTES);
-  s.crypto_pwhash(out, utf8Encode(password.normalize('NFKC')), salt, profile.t, profile.m, profile.p, Argon2Params.ALG);
+  const out = s.crypto_pwhash(Argon2Params.KEY_BYTES, utf8Encode(password.normalize('NFKC')), salt, profile.t, profile.m, Argon2Params.ALG);
   return { hashB64Url: toBase64Url(out), saltB64Url: toBase64Url(salt), profile };
 }
 
@@ -51,10 +48,9 @@ export async function hashPassword(password: string, profile: Argon2Profile = Pr
 export async function verifyPassword(password: string, hashB64Url: string, saltB64Url: string, profile: Argon2Profile = Profiles.hardened): Promise<boolean> {
   const s = await ensureReady();
   const salt = fromBase64Url(saltB64Url);
-  if (salt.length < Argon2Params.SALT_BYTES) return false;
-  const out = new Uint8Array(Argon2Params.KEY_BYTES);
-  s.crypto_pwhash(out, utf8Encode(password.normalize('NFKC')), salt, profile.t, profile.m, profile.p, Argon2Params.ALG);
+  if (salt.length !== Argon2Params.SALT_BYTES) return false;
+  const out = s.crypto_pwhash(Argon2Params.KEY_BYTES, utf8Encode(password.normalize('NFKC')), salt, profile.t, profile.m, Argon2Params.ALG);
   const stored = fromBase64Url(hashB64Url);
   if (stored.length !== out.length) return false;
-  return s.memcmp(stored, out) === 0;
+  return s.memcmp(stored, out);
 }

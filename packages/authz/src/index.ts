@@ -1,6 +1,6 @@
 import { MATRICES, type Resource, type Subject, type Verb, type WorkspaceType } from './matrix.js';
 export type { Resource, Subject, Verb, WorkspaceType };
-export { MATRICES, type Matrix } from './matrix.js';
+export { MATRICES } from './matrix.js';
 
 export interface AuthzContext { resource: Resource; verb: Verb; workspaceType: WorkspaceType; subjectRole: Subject['role']; }
 

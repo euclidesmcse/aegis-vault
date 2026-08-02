@@ -17,9 +17,7 @@ export async function randomBytes(len: number): Promise<Uint8Array> {
   if (len <= 0) throw new RangeError('len must be positive');
   if (len > 1024 * 1024) throw new RangeError('len too large for synchronous generation');
   const s = await ensureReady();
-  const out = new Uint8Array(len);
-  s.randombytes_buf(out);
-  return out;
+  return s.randombytes_buf(len);
 }
 
 export async function randomIntBelow(max: number): Promise<number> {
