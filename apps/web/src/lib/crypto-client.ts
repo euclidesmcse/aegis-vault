@@ -6,7 +6,6 @@
 // TOTP secret (20 bytes) envelopado sob authKey via XChaCha20-Poly1305.
 // Cada item do cofre envelopado sob vaultKey.
 
-import sodium from 'libsodium-wrappers';
 import {
   deriveKey,
   Profiles,
@@ -22,12 +21,6 @@ import {
   decrypt,
   type Argon2Profile,
 } from '@aegis/crypto';
-
-let ready = false;
-async function ensureReady(): Promise<typeof sodium> {
-  if (!ready) { await sodium.ready; ready = true; }
-  return sodium;
-}
 
 // ---------- Base32 (RFC 4648, sem padding) --------------------------------
 const B32_ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
@@ -74,6 +67,19 @@ export function base32Decode(text: string): Uint8Array {
 }
 
 // ---------- TOTP (RFC 6238 sobre HMAC-SHA1) -------------------------------
+// HMAC-SHA1 via WebCrypto: libsodium NAO expoe crypto_auth_hmacsha1 em nenhum
+// build (regular nem sumo). Mesmo helper roda em browser e Node 24+.
+
+async function hmacSha1(keyBytes: Uint8Array, dataBytes: Uint8Array): Promise<Uint8Array> {
+  if (typeof globalThis.crypto === 'undefined' || !globalThis.crypto.subtle) {
+    throw new Error('WebCrypto.subtle indisponivel - nao posso rodar TOTP');
+  }
+  const k = await globalThis.crypto.subtle.importKey(
+    'raw', keyBytes, { name: 'HMAC', hash: 'SHA-1' }, false, ['sign']
+  );
+  const sig = await globalThis.crypto.subtle.sign('HMAC', k, dataBytes);
+  return new Uint8Array(sig);
+}
 
 export async function totpCode(secret: Uint8Array, unixSeconds: number, period = 30, digits = 6): Promise<string> {
   if (secret.length < 10) throw new Error('TOTP secret must be >= 10 bytes');
@@ -81,8 +87,7 @@ export async function totpCode(secret: Uint8Array, unixSeconds: number, period =
   const counterBytes = new Uint8Array(8);
   let c = counter;
   for (let i = 7; i >= 0; i--) { counterBytes[i] = c & 0xff; c = Math.floor(c / 256); }
-  const s = await ensureReady();
-  const mac = s.crypto_auth_hmacsha1(secret, counterBytes);
+  const mac = await hmacSha1(secret, counterBytes);
   const offset = (mac[mac.length - 1] ?? 0) & 0x0f;
   const binCode =
     (((mac[offset] ?? 0) & 0x7f) << 24) |
@@ -237,10 +242,8 @@ const MOD_BIAS = 4_294_967_296 % VERIFY_MAX; // 4_967_296
 const REJECT_THRESHOLD = 4_294_967_296 - MOD_BIAS; // 4_294_000_000
 
 export async function generateVerificationCode(): Promise<string> {
-  const s = await ensureReady();
   while (true) {
-    const buf = new Uint8Array(4);
-    s.randombytes_buf(buf);
+    const buf = await randomBytes(4);
     const v =
       ((buf[0] ?? 0) << 24) |
       ((buf[1] ?? 0) << 16) |

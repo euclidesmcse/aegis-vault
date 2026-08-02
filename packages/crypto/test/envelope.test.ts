@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import sodium from 'libsodium-wrappers';
+import sodium from 'libsodium-wrappers-sumo';
 import { encryptEnvelope, decryptEnvelope, ENVELOPE_VERSION } from '../src/envelope.js';
 import { utf8Encode } from '../src/encoding.js';
 

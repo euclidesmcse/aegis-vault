@@ -7,14 +7,7 @@ settings:
 importers:
 
   .:
-    dependencies:
-      libsodium-wrappers:
-        specifier: ^0.7.13
-        version: 0.7.16
     devDependencies:
-      '@types/libsodium-wrappers':
-        specifier: ^0.7.14
-        version: 0.7.14
       '@types/node':
         specifier: ^20.12.7
         version: 20.19.43
@@ -66,13 +59,16 @@ importers:
 
   packages/crypto:
     dependencies:
-      libsodium-wrappers:
-        specifier: ^0.7.13
-        version: 0.7.16
+      libsodium-wrappers-sumo:
+        specifier: ^0.8.4
+        version: 0.8.4
     devDependencies:
       typescript:
         specifier: ^5.5.3
         version: 5.9.3
+      vitest:
+        specifier: ^1.6.0
+        version: 1.6.1(@types/node@20.19.43)
 
   packages/i18n:
     devDependencies:
@@ -397,9 +393,6 @@ packages:
   '@types/estree@1.0.9':
     resolution: {integrity: sha512-GhdPgy1el4/ImP05X05Uw4cw2/M93BCUmnEvWZNStlCzEKME4Fkk+YpoA5OiHNQmoS7Cafb8Xa3Pya8m1Qrzeg==}
 
-  '@types/libsodium-wrappers@0.7.14':
-    resolution: {integrity: sha512-5Kv68fXuXK0iDuUir1WPGw2R9fOZUlYlSAa0ztMcL0s0BfIDTqg9GXz8K30VJpPP3sxWhbolnQma2x+/TfkzDQ==}
-
   '@types/node@20.19.43':
     resolution: {integrity: sha512-6oYBAi5ikg4Pl+kGsoYtawUMBT2zZMCvPNF7pVLnHZfd1zf38DRiWn/gT01RYCdUqkv7Fhr+C9ot4/tb+2sVvA==}
 
@@ -507,11 +500,11 @@ packages:
   js-tokens@9.0.1:
     resolution: {integrity: sha512-mxa9E9ITFOt0ban3j6L5MpjwegGz6lBQmM1IJkWeBZGcMxto50+eWdjC/52xDbS2vy0k7vIMK0Fe2wfL9OQSpQ==}
 
-  libsodium-wrappers@0.7.16:
-    resolution: {integrity: sha512-Gtr/WBx4dKjvRL1pvfwZqu7gO6AfrQ0u9vFL+kXihtHf6NfkROR8pjYWn98MFDI3jN19Ii1ZUfPR9afGiPyfHg==}
+  libsodium-sumo@0.8.4:
+    resolution: {integrity: sha512-TMtHShQfVVsaxDygyapvUC3o7YsPgXa/hRWeIgzyFz6w5k/1hirGptCxp1U7XwW3rCskaTTYKgV10v86UiGgNw==}
 
-  libsodium@0.7.16:
-    resolution: {integrity: sha512-3HrzSPuzm6Yt9aTYCDxYEG8x8/6C0+ag655Y7rhhWZM9PT4NpdnbqlzXhGZlDnkgR6MeSTnOt/VIyHLs9aSf+Q==}
+  libsodium-wrappers-sumo@0.8.4:
+    resolution: {integrity: sha512-ql7hcgulKZ3ekfa2DGAogcCKsWU0diA/0nArz1CFzh93WQdb46/Kj18ka/Hifq6uA3Ush34Pc6vU/6HXeRwUkg==}
 
   local-pkg@0.5.1:
     resolution: {integrity: sha512-9rrA30MRRP3gBD3HTGnC6cDFpaE1kVDWxWgqWJUN0RvDNAo+Nz/9GxB+nHOH0ifbVFy0hSA1V6vFDvnx54lTEQ==}
@@ -887,8 +880,6 @@ snapshots:
 
   '@types/estree@1.0.9': {}
 
-  '@types/libsodium-wrappers@0.7.14': {}
-
   '@types/node@20.19.43':
     dependencies:
       undici-types: 6.21.0
@@ -1023,11 +1014,11 @@ snapshots:
 
   js-tokens@9.0.1: {}
 
-  libsodium-wrappers@0.7.16:
-    dependencies:
-      libsodium: 0.7.16
+  libsodium-sumo@0.8.4: {}
 
-  libsodium@0.7.16: {}
+  libsodium-wrappers-sumo@0.8.4:
+    dependencies:
+      libsodium-sumo: 0.8.4
 
   local-pkg@0.5.1:
     dependencies:

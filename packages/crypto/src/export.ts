@@ -1,5 +1,5 @@
 // Encrypted vault export bundle (.aegis) - cleaned of dead code path.
-import sodium from 'libsodium-wrappers';
+import sodium from 'libsodium-wrappers-sumo';
 import { utf8Encode, toBase64Url, fromBase64Url } from './encoding.js';
 import { deriveKey, type Argon2Profile } from './kdf.js';
 import { encrypt, decrypt } from './aead.js';

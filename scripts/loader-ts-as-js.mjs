@@ -2,17 +2,6 @@ import { existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
-function shouldRemap(parentURL) {
-  if (!parentURL) return false;
-  try {
-    const parent = fileURLToPath(parentURL);
-    // Substring check avoids any platform-path escape issues.
-    return parent.includes('packages');
-  } catch {
-    return false;
-  }
-}
-
 export async function resolve(specifier, context, nextResolve) {
   if (!specifier.startsWith('./') && !specifier.startsWith('../')) {
     return nextResolve(specifier, context);

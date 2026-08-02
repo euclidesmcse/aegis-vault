@@ -1,7 +1,7 @@
 // ESM fixture para TOTP RFC 6238.
 // Usa WebCrypto (crypto.subtle.sign HMAC-SHA1) que funciona em Node 24+ e em browser.
-// Em prod, libsodium-wrappers expoe crypto_auth_hmacsha1 e o codigo de producao
-// em apps/web/src/lib/crypto-client.ts continua usando.
+// Nota: libsodium NAO expoe crypto_auth_hmacsha1 em nenhum build (regular nem sumo);
+// o codigo de producao em apps/web/src/lib/crypto-client.ts usa o MESMO padrao WebCrypto.
 
 const B32_ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
 
@@ -34,8 +34,8 @@ export function base32Decode(text) {
 }
 
 /**
- * HMAC-SHA1 via WebCrypto. Shim para libsodium-wrappers.crypto_auth_hmacsha1 no
- * sandbox (o WASM build do shim nao expoe). Em prod, libsodium real expoe.
+ * HMAC-SHA1 via WebCrypto. libsodium nao expoe crypto_auth_hmacsha1 em nenhum
+ * build (regular nem sumo) — WebCrypto e o caminho canonico (browser e Node 24+).
  */
 async function hmacSha1(keyBytes, dataBytes) {
   if (typeof globalThis.crypto === 'undefined' || !globalThis.crypto.subtle) {

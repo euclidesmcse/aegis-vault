@@ -12,14 +12,19 @@ jobs:
         working-directory: aegis-vault
     steps:
       - uses: actions/checkout@v4
+      # pnpm 11 (lockfileVersion 9.0 gerado pelo corepack local).
       - uses: pnpm/action-setup@v4
-        with: { version: 9 }
+        with: { version: 11 }
+      # Node 22+: os testes smoke/shim usam --experimental-strip-types (Node >=22.6).
       - uses: actions/setup-node@v4
-        with: { node-version: 20, cache: pnpm, cache-dependency-path: aegis-vault/pnpm-lock.yaml }
+        with: { node-version: 22, cache: pnpm, cache-dependency-path: aegis-vault/pnpm-lock.yaml }
       - run: pnpm install --frozen-lockfile
       - run: pnpm -r typecheck
       - run: pnpm --filter @aegis/i18n check
-      - run: pnpm --filter @aegis/crypto test
+      # crypto: bateria completa — smoke (sem libsodium), shim e real (libsodium-sumo via vitest).
+      - run: pnpm --filter @aegis/crypto test:smoke
+      - run: pnpm --filter @aegis/crypto test:shim
+      - run: pnpm --filter @aegis/crypto test:real
       - run: pnpm --filter @aegis/contracts test
       - run: pnpm --filter @aegis/authz test
 
@@ -42,9 +47,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
-        with: { version: 9 }
+        with: { version: 11 }
       - uses: actions/setup-node@v4
-        with: { node-version: 20, cache: pnpm }
+        with: { node-version: 22, cache: pnpm }
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @aegis/api build
       - run: pnpm --filter @aegis/api db:migrate

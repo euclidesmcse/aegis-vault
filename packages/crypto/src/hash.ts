@@ -3,17 +3,12 @@
 //   paridade Node ↔ browser sem polyfills).
 // - Helpers para digest de token de compartilhamento.
 
-import sodium from 'libsodium-wrappers';
+import sodium from 'libsodium-wrappers-sumo';
 import { toBase64Url } from './encoding.js';
 
-// @types/libsodium-wrappers@0.7.14 omite crypto_hash_sha256 (runtime 0.7.16 expõe).
-type SodiumWithSha256 = typeof sodium & {
-  crypto_hash_sha256(message: string | Uint8Array, outputFormat?: 'uint8array' | null): Uint8Array;
-};
-
-async function ensureReady(): Promise<SodiumWithSha256> {
+async function ensureReady(): Promise<typeof sodium> {
   await sodium.ready;
-  return sodium as SodiumWithSha256;
+  return sodium;
 }
 
 export async function sha256(input: Uint8Array): Promise<Uint8Array> {
@@ -38,7 +33,7 @@ export async function sha256Base64Url(input: Uint8Array): Promise<string> {
 
 /** k-anonimato prefix SHA-1 (5 chars em hex). Usado para HIBP. */
 export async function sha1PrefixHex(input: Uint8Array, prefixBytes = 5): Promise<string> {
-  // libsodium-wrappers nao expone SHA-1 em build WASM; usamos
+  // libsodium-wrappers-sumo nao expone SHA-1 em build WASM; usamos
   // algoritmo manual via SHA-256 quando HIBP nao esta habilitado
   // e documentamos a incompatibilidade para opt-in em producao.
   // Para Fase 2+: substituir por https://hash.shaunlovely.com ou

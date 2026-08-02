@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import sodium from 'libsodium-wrappers';
+import sodium from 'libsodium-wrappers-sumo';
 import {
   generatePassword,
   generatePin,
@@ -98,7 +98,8 @@ describe('Passphrase generator', () => {
       includeNumber: false,
       wordlist: wl,
     });
-    expect(p.split('-')).toHaveLength(4);
+    // O separador é sorteado entre '-_. ' (EFF-style), nao fixo em '-'.
+    expect(p.split(/[-_. ]/)).toHaveLength(4);
   });
 });
 

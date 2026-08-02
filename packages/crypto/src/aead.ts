@@ -3,7 +3,7 @@
 // indisponível no build WASM). Nonce aleatorio de 192 bits elimina
 // risco de reuso mesmo sem contador, até 2^64 mensagens por chave.
 
-import sodium from 'libsodium-wrappers';
+import sodium from 'libsodium-wrappers-sumo';
 
 const KEY_BYTES = 32;
 const NPUB_BYTES = 24; // IETF XChaCha20-Poly1305 nonce.

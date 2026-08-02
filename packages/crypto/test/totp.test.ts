@@ -3,7 +3,7 @@
 // A T=59s (1970-01-01 00:00:59 UTC), o codigo de 8 digitos esperado e 94287082
 // (RFC 6238 appendix B test vectors).
 // O mesmo secret + T=59s produz codigo de 6 digitos 287082 (truncado).
-// Em T=1111111109 (RFC 6238), o esperado para 8 digitos e 081804 -> 6 digitos: 081804.
+// Em T=1111111109 (RFC 6238), o esperado para 8 digitos e 07081804 -> 6 digitos: 081804.
 
 import {
   totpCode,
@@ -30,7 +30,7 @@ async function main() {
 
   // T=1111111109 canonical (RFC 6238 vector).
   const digits8b = await totpCode(secretBytes, 1111111109, 30, 8);
-  assert.equal(digits8b, '08180492'.slice(0, 8), 'T=1111111109 -> 08180492 (RFC 6238)');
+  assert.equal(digits8b, '07081804', 'T=1111111109 -> 07081804 (RFC 6238)');
 
   // VerifyTotp accepts within +/-1 step window.
   const matches = await verifyTotp(secretBytes, digits8.slice(-6), 59, 1, 30);

@@ -1,4 +1,4 @@
-import sodium from 'libsodium-wrappers';
+import sodium from 'libsodium-wrappers-sumo';
 import { utf8Encode, toBase64Url, fromBase64Url } from './encoding.js';
 
 export const Argon2Params = {

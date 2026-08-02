@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import sodium from 'libsodium-wrappers';
+import sodium from 'libsodium-wrappers-sumo';
 import { createExportBundle, decryptExportBundleWithContext, EXPORT_MAGIC, ExportBundleJson } from '../src/export.js';
 import { utf8Encode, fromBase64Url } from '../src/encoding.js';
 

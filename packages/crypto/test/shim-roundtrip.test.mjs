@@ -3,7 +3,7 @@
 // at node_modules/libsodium-wrappers/dist/modules-esm/libsodium.mjs is a
 // WebCrypto-backed stand-in (PBKDF2-SHA256 + AES-GCM) that satisfies the
 // libsodium API surface but is NOT algorithmically equivalent to the real
-// libsodium-wrappers (Argon2id + XChaCha20-Poly1305-IETF). Therefore this
+// libsodium-wrappers-sumo (Argon2id + XChaCha20-Poly1305-IETF). Therefore this
 // test only asserts referential transparency (round-trip inside this process)
 // and never compares derived bytes against external known-good answers.
 //

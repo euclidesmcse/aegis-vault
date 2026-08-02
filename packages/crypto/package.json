@@ -10,12 +10,14 @@
     "test:smoke": "node --experimental-strip-types --no-warnings --experimental-loader=../../scripts/loader-ts-as-js.mjs test/smoke.test.mjs",
     "test": "pnpm run test:smoke",
     "test:shim": "node --experimental-strip-types --no-warnings --experimental-loader=../../scripts/loader-ts-as-js.mjs test/shim-roundtrip.test.mjs",
-    "test:all": "pnpm run test:smoke && pnpm run test:shim"
+    "test:real": "vitest run",
+    "test:all": "pnpm run test:smoke && pnpm run test:shim && pnpm run test:real"
   },
   "dependencies": {
-    "libsodium-wrappers": "^0.7.13"
+    "libsodium-wrappers-sumo": "^0.8.4"
   },
   "devDependencies": {
-    "typescript": "^5.5.3"
+    "typescript": "^5.5.3",
+    "vitest": "^1.6.0"
   }
 }
